@@ -20,11 +20,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR cmdLine, int showCmd) {
             0, // No extended styling
             CLASS_NAME, // Window class name
             "_", // Window name (don't care)
-            0, // No styling (don't care)
+            WS_OVERLAPPEDWINDOW, // No styling (don't care)
             0, // X position (don't care)
             0, // Y position (don't care)
-            0, // Width (don't care)
-            0, // Height (don't care)
+            400, // Width (don't care)
+            400, // Height (don't care)
             nullptr, // Has no parent
             nullptr, // No external menu window used
             hInstance, // Instance to associate with window
@@ -34,28 +34,42 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR cmdLine, int showCmd) {
     // If the window could not be made, GetLastError for more information
     if (hwnd == nullptr) { return -1; }
 
-    RAWINPUTDEVICE devices[1];
-    devices[0].usUsagePage = 1; // Generic desktop controls
-    devices[0].usUsage = 6; // Keyboard
-    devices[0].hwndTarget = hwnd; // Associated window handle
-    // Events generated for: any input | device addition/removal
-    devices[0].dwFlags = RIDEV_INPUTSINK | RIDEV_DEVNOTIFY;
+    RAWINPUTDEVICE devices[2];
+    devices[0].usUsagePage = 1;             // Generic desktop controls
+    devices[0].usUsage = 6;                 // Keyboard
+    devices[0].hwndTarget = hwnd;           // Associated window handle
+    devices[0].dwFlags = RIDEV_DEVNOTIFY;   // Message on removal/addition
 
-    bool registerKeyboard = RegisterRawInputDevices(
-            devices, 1, sizeof(RAWINPUTDEVICE));
+    devices[1].usUsagePage = 1;             // Generic desktop controls
+    devices[1].usUsage = 2;                 // Mouse
+    devices[1].hwndTarget = hwnd;           // Associated window handle
+    devices[1].dwFlags = RIDEV_DEVNOTIFY;   // Message on removal/addition
 
-    // If the keyboard raw input couldn't be registered, GetLastError for more information
-    if (!registerKeyboard) { return -1; }
+    UINT RawInpDevSize = sizeof(RAWINPUTDEVICE);
+
+    // If the raw inputs couldn't be registered, GetLastError for more info
+    bool regDevices = RegisterRawInputDevices(devices, 2, RawInpDevSize);
+    if (!regDevices) { return -1; }
 
     //Options: showCmd, SW_RESTORE, SW_HIDE
-    ShowWindow(hwnd, SW_HIDE);
+    ShowWindow(hwnd, showCmd);
 
-    // Run the message loop.
+    // Run the message loop
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+
+    devices[0].dwFlags = RIDEV_REMOVE;  // Remove device
+    devices[0].hwndTarget = nullptr;    // No device target window
+
+    devices[1].dwFlags = RIDEV_REMOVE;  // Remove device
+    devices[1].hwndTarget = nullptr;    // No device target window
+
+    // If the raw inputs couldn't be unregistered, GetLastError for more info
+    bool unregDevices = RegisterRawInputDevices(devices, 2, RawInpDevSize);
+    if (!unregDevices) { return -1; }
 
     return 0;
 }
@@ -64,45 +78,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR cmdLine, int showCmd) {
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
 
-        // Input message case
-        case WM_INPUT: {
-            UINT dwSize;
-
-            GetRawInputData((HRAWINPUT) lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
-            auto lpb = new BYTE[dwSize];
-
-            if (GetRawInputData((HRAWINPUT) lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize) {
-                OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
-            }
-
-            auto *raw = (RAWINPUT *) lpb;
-
-            if (raw->header.dwType == RIM_TYPEKEYBOARD) {
-                std::cout << "Extra Info: " << raw->data.keyboard.ExtraInformation << std::endl;
-                std::cout << "Flags: " << raw->data.keyboard.Flags << std::endl;
-                std::cout << "MakeCode: " << raw->data.keyboard.MakeCode << std::endl;
-                std::cout << "Message: " << raw->data.keyboard.Message << std::endl;
-                std::cout << "Reserved: " << raw->data.keyboard.Reserved << std::endl;
-                std::cout << "VKey: " << raw->data.keyboard.VKey << std::endl;
-            }
-
-            unsigned int dataSize = 2048;
-            char *deviceName = (char *) malloc(dataSize);
-            GetRawInputDeviceInfoA(raw->header.hDevice, RIDI_DEVICENAME, deviceName, &dataSize);
-            std::cout << deviceName << std::endl;
-            free(deviceName);
-            std::cout << std::endl;
-
-            delete[] lpb;
-            return 0;
-        }
-
         // Device addition/removal case
         case WM_INPUT_DEVICE_CHANGE: {
-            if(wParam == GIDC_ARRIVAL) {
+            if (wParam == GIDC_ARRIVAL) {
                 std::cout << "Device Added." << std::endl;
-            }
-            else { // wParam == GIDC_REMOVAL
+            } else { // wParam == GIDC_REMOVAL
                 std::cout << "Device Removed" << std::endl;
             }
             return 0;
