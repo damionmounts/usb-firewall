@@ -4,16 +4,15 @@
 
 #include "utils.h"
 
-void printRidiDeviceInfo(RID_DEVICE_INFO* devInfo) {
+void printRidiDeviceInfo(RID_DEVICE_INFO *devInfo) {
     std::cout << "Device type: " << devInfo->dwType << std::endl;
-    if(devInfo->dwType == 0) {
+    if (devInfo->dwType == 0) {
         std::cout << "[Mouse]" << std::endl;
         std::cout << "ID: " << devInfo->mouse.dwId << std::endl;
         std::cout << "# of Buttons: " << devInfo->mouse.dwNumberOfButtons << std::endl;
         std::cout << "Sample Rate: " << devInfo->mouse.dwSampleRate << std::endl;
         std::cout << "Has Horizontal Scroll: " << devInfo->mouse.fHasHorizontalWheel << std::endl;
-    }
-    else if(devInfo->dwType == 1) {
+    } else if (devInfo->dwType == 1) {
         std::cout << "[Keyboard]" << std::endl;
         std::cout << "Type: " << devInfo->keyboard.dwType << std::endl;
         std::cout << "Sub-type: " << devInfo->keyboard.dwSubType << std::endl;
@@ -21,8 +20,7 @@ void printRidiDeviceInfo(RID_DEVICE_INFO* devInfo) {
         std::cout << "# of Function Keys: " << devInfo->keyboard.dwNumberOfFunctionKeys << std::endl;
         std::cout << "# of Indicators: " << devInfo->keyboard.dwNumberOfIndicators << std::endl;
         std::cout << "# of Keys: " << devInfo->keyboard.dwNumberOfKeysTotal << std::endl;
-    }
-    else { //devInfo.dwType == 2
+    } else { //devInfo.dwType == 2
         std::cout << "[Non-Mouse | Non-Keyboard]" << std::endl;
 
         std::cout << std::hex;
@@ -46,10 +44,10 @@ int main() {
     ret = GetRawInputDeviceList(ptrDevices, &numberOfDevices, sizeof(RAWINPUTDEVICELIST));
     std::cout << "Return: " << ret << std::endl;
 
-    char *deviceName = (char*)malloc(1024);
+    char *deviceName = (char *) malloc(1024);
     unsigned int dataSize;
 
-    for(unsigned int i = 0; i < numberOfDevices; i++) {
+    for (unsigned int i = 0; i < numberOfDevices; i++) {
         std::cout << "\n---------------------------------------------------------------------------------" << std::endl;
         std::cout << "Device " << i << ": " << std::endl;
 
@@ -62,24 +60,25 @@ int main() {
         std::cout << deviceName << std::endl;
 
         std::vector<std::string> tokens = splitString(devNameStr, '#');
-        for(unsigned int nn = 0; nn < tokens.size(); nn++) {
+        for (unsigned int nn = 0; nn < tokens.size(); nn++) {
             std::cout << "tokens[" << nn << "] = " << tokens[nn] << std::endl;
         }
 
         unsigned long dataBufSize = 8192;
-        char* dataBuf = (char*)malloc(dataBufSize);
+        char *dataBuf = (char *) malloc(dataBufSize);
 
         std::string subKey = R"(SYSTEM\CurrentControlSet\Enum\)" + tokens[0] + "\\" + tokens[1] + "\\" + tokens[2];
 
         DWORD type;
 
-        LSTATUS x = RegGetValueA(HKEY_LOCAL_MACHINE,
-                                 subKey.c_str(),
-                                 "DeviceDesc",
-                                 RRF_RT_ANY,
-                                 &type,
-                                 dataBuf,
-                                 &dataBufSize
+        LSTATUS x = RegGetValueA(
+                HKEY_LOCAL_MACHINE,
+                subKey.c_str(),
+                "DeviceDesc",
+                RRF_RT_ANY,
+                &type,
+                dataBuf,
+                &dataBufSize
         );
 
         std::cout << "Field type: " << type << std::endl;
