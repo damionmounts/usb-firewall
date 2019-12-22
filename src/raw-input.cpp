@@ -82,8 +82,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_INPUT_DEVICE_CHANGE: {
             if (wParam == GIDC_ARRIVAL) {
                 std::cout << "Device Added." << std::endl;
-            } else { // wParam == GIDC_REMOVAL
+                // TODO: Alert | enter quarantine mode
+            }
+            else { //wParam == GIDC_REMOVAL)
                 std::cout << "Device Removed" << std::endl;
+                // TODO: Notify of removal | low-priority
             }
             return 0;
         }
