@@ -23,8 +23,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR cmdLine, int showCmd) {
             WS_OVERLAPPEDWINDOW, // No styling (don't care)
             0, // X position (don't care)
             0, // Y position (don't care)
-            400, // Width (don't care)
-            400, // Height (don't care)
+            500, // Width (don't care)
+            500, // Height (don't care)
             nullptr, // Has no parent
             nullptr, // No external menu window used
             hInstance, // Instance to associate with window
@@ -52,7 +52,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR cmdLine, int showCmd) {
     if (!regDevices) { return -1; }
 
     //Options: showCmd, SW_RESTORE, SW_HIDE
-    ShowWindow(hwnd, showCmd);
+    ShowWindow(hwnd, SW_HIDE);
 
     // Run the message loop
     MSG msg = {};

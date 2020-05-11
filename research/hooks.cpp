@@ -34,7 +34,7 @@ LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
         // FIXME: Mouse is passed-on for testing | should block in release
 
         //return -1;
-        return CallNextHookEx(llMouseHook, nCode, wParam, lParam);
+        //return CallNextHookEx(llMouseHook, nCode, wParam, lParam);
     }
 }
 
