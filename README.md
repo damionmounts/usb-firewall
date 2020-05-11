@@ -7,6 +7,18 @@ A simple, open-source, free, USB endpoint security tool for mice and keyboards.
 
 ---
 
+### Minimum Viable Product (in-progress)
+* Addition of a mouse or keyboard locks the device
+* Entering the PIN unlocks the device
+
+### Adding Value (in-order after MVP)
+1. User Interface: allow application to be used by a broader audience
+2. Specify Device Type: provides user information on what device was attached
+    * Additions during a lock-down need to be accounted for
+3. Display Input Events: allows savvy user to identify potential attack
+
+---
+
 ### Purpose
 
 This tool is aimed at anyone who uses a laptop running Windows and wants more
