@@ -9,15 +9,12 @@ HWND window;
 std::string password = "1793";
 unsigned long progress = 0;
 
-// Application Instance & Device Additions / Removals --------------------------
-
 // Prototypes
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 // Entry point (WinMain ASCII)
-// HINSTANCE hPrevInstance skipped
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR cmdLine, int showCmd) {
 
     WNDCLASSA wc = {};
@@ -117,24 +114,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     std::cout << "Device Added." << std::endl;
                     Beep(1000, 200);
                     input_lock = true;
-                    //MessageBox(window, "Device was added - please enter password", "Warning", MB_OK + MB_ICONWARNING);
                 }
             }
-            return 0;
-        }
-
-        // Window close request case
-        case WM_DESTROY: {
-            PostQuitMessage(0);
-            return 0;
-        }
-
-        // Window redraw request case
-        case WM_PAINT: {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hwnd, &ps);
-            FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW + 1));
-            EndPaint(hwnd, &ps);
             return 0;
         }
 
@@ -145,17 +126,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     }
 }
 
-// Global Hooking Facilities --------------------------
-
-void printKeyData(KBDLLHOOKSTRUCT *keyData) {
-    std::cout << "Time: " << keyData->time << std::endl;
-    std::cout << "Flags: " << keyData->flags << std::endl;
-    std::cout << "Scan Code: " << keyData->scanCode << std::endl;
-    std::cout << "Vk Code: " << keyData->vkCode << std::endl;
-    std::cout << "Extra Info: " << keyData->dwExtraInfo << std::endl;
-    std::cout << std::endl;
-}
-
+// wParam -> Was the event the key being pressed?
 bool keyDown(WPARAM wParam) {
     return ((wParam == WM_KEYDOWN) || (wParam == WM_SYSKEYDOWN));
 }
@@ -193,8 +164,6 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         // If unlocked -> pass event down hook chain
         if (!input_lock)
             return CallNextHookEx(llKeyboardHook, nCode, wParam, lParam);
-
-        //SetFocus(window);
 
         KBDLLHOOKSTRUCT* keyEvent = (KBDLLHOOKSTRUCT *) lParam;
 

@@ -7,9 +7,12 @@ A simple, open-source, free, USB endpoint security tool for mice and keyboards.
 
 ---
 
-### Minimum Viable Product (in-progress)
+### Minimum Viable Product (beta)
 * Addition of a mouse or keyboard locks the device
 * Entering the PIN unlocks the device
+* Issues
+    * Device addition while moving mouse can cause extreme mouse lag and delayed locking
+    * Multi-devices may cause user to have to enter unlock PIN multiple times
 
 ### Adding Value (in-order after MVP)
 1. User Interface: allow application to be used by a broader audience
