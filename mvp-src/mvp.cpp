@@ -2,9 +2,12 @@
 #include <iostream>
 
 ULONGLONG t_ms_start;
-bool mouse_lock = false;
-bool keyboard_lock = false;
+bool input_lock = false;
 HHOOK llKeyboardHook, llMouseHook;
+HWND window;
+
+std::string password = "1793";
+unsigned long progress = 0;
 
 // Application Instance & Device Additions / Removals --------------------------
 
@@ -20,20 +23,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR cmdLine, int showCmd) {
     WNDCLASSA wc = {};
     wc.lpfnWndProc = WindowProc; // Pointer to window procedure
     wc.hInstance = hInstance; // Handle to application instance
-    const char *CLASS_NAME = "Hiding Window Class"; // Window class name
+    const char *CLASS_NAME = "Hidden Window Class"; // Window class name
     wc.lpszClassName = CLASS_NAME;
     RegisterClass(&wc); // Register window class
 
     // Create window
-    HWND window = CreateWindowExA(
+    window = CreateWindowExA(
             0, // No extended styling
             CLASS_NAME, // Window class name
             "_", // Window name (don't care)
-            WS_OVERLAPPEDWINDOW, // No styling (don't care)
+            0, // No styling (don't care)
             0, // X position (don't care)
             0, // Y position (don't care)
-            500, // Width (don't care)
-            500, // Height (don't care)
+            0, // Width (don't care)
+            0, // Height (don't care)
             nullptr, // Has no parent
             nullptr, // No external menu window used
             hInstance, // Instance to associate with window
@@ -41,7 +44,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR cmdLine, int showCmd) {
     );
 
     //Options: showCmd, SW_RESTORE, SW_HIDE
-    ShowWindow(window, showCmd);
+    ShowWindow(window, SW_HIDE);
 
     // If the window could not be made, GetLastError for more information
     if (window == nullptr) { return -1; }
@@ -113,7 +116,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 if (wParam == GIDC_ARRIVAL) {
                     std::cout << "Device Added." << std::endl;
                     Beep(1000, 200);
-                    keyboard_lock = true;
+                    input_lock = true;
+                    //MessageBox(window, "Device was added - please enter password", "Warning", MB_OK + MB_ICONWARNING);
                 }
             }
             return 0;
@@ -166,10 +170,8 @@ LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
     // Message is processed and blocked from system
     else {
-        std::cout << "Mouse event!" << std::endl;
-
         // If locked -> don't call next hook
-        if (mouse_lock) {
+        if (input_lock) {
             return -1;
         } else {
             return CallNextHookEx(llMouseHook, nCode, wParam, lParam);
@@ -185,23 +187,34 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         return CallNextHookEx(llKeyboardHook, nCode, wParam, lParam);
     }
 
-        // Message is processed and blocked from system
+    // Message is processed and blocked from system
     else {
-        if (keyDown(wParam)) {
-            std::cout << "DOWN" << std::endl;
-        } else {
-            std::cout << "UP" << std::endl;
-        }
-        printKeyData((KBDLLHOOKSTRUCT *) lParam);
 
-        // ToDo: Add keyboard state keeping to aid with translation to text
-        // ToDo: Add captured input to log
+        // If unlocked -> pass event down hook chain
+        if (!input_lock)
+            return CallNextHookEx(llKeyboardHook, nCode, wParam, lParam);
+
+        //SetFocus(window);
+
+        KBDLLHOOKSTRUCT* keyEvent = (KBDLLHOOKSTRUCT *) lParam;
+
+        char c = MapVirtualKeyA(keyEvent->vkCode, MAPVK_VK_TO_CHAR);
+
+        if (c >= '0' && c <= '9' && !keyDown(wParam)) {
+            if (c == password.at(progress)) {
+                progress++;
+                if (progress == password.length()) {
+                    input_lock = false;
+                    progress = 0;
+                    Beep(2000, 200);
+                }
+            }
+            else {
+                progress = 0;
+            }
+        }
 
         // If locked -> don't call next hook
-        if (keyboard_lock) {
-            return -1;
-        } else {
-            return CallNextHookEx(llKeyboardHook, nCode, wParam, lParam);
-        }
+        return -1;
     }
 }
