@@ -6,7 +6,7 @@ bool input_lock = false;
 HHOOK llKeyboardHook, llMouseHook;
 HWND window;
 
-std::string password = "1793";
+std::string password;
 unsigned long progress = 0;
 
 // Prototypes
@@ -16,6 +16,22 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 // Entry point (WinMain ASCII)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR cmdLine, int showCmd) {
+
+    password = cmdLine;
+    if (password.length() == 0) {
+        std::cout << "A password MUST be specified." << std::endl;
+        std::cout << "Usage: usbFw.exe 0123456789" << std::endl;
+        return -1;
+    }
+    else {
+        for (char c: password) {
+            if (!isdigit(c)) {
+                std::cout << "Password MUST be numeric only." << std::endl;
+                std::cout << "Usage: usbFw.exe 0123456789" << std::endl;
+                return -2;
+            }
+        }
+    }
 
     WNDCLASSA wc = {};
     wc.lpfnWndProc = WindowProc; // Pointer to window procedure
