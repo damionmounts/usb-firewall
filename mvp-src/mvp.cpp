@@ -168,10 +168,6 @@ LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
     else {
         std::cout << "Mouse event!" << std::endl;
 
-        // ToDo: Add captured input to log
-
-        // FIXME: Mouse is passed-on for testing | should block in release
-
         // If locked -> don't call next hook
         if (mouse_lock) {
             return -1;

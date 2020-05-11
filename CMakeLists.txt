@@ -12,3 +12,4 @@ add_executable(Raw_Input research/raw-input.cpp research/utils.cpp research/util
 add_executable(Hooks research/hooks.cpp research/utils.cpp research/utils.h)
 add_executable(Present research/present-devices.cpp research/utils.cpp research/utils.h)
 add_executable(MVP mvp-src/mvp.cpp)
+add_executable(KeyASCII research/ascii-typed.cpp research/utils.cpp research/utils.h)
